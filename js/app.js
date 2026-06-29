@@ -9,6 +9,28 @@ const { makeZip } = window.DC_zip;
 // Lower = stricter. Exact byte matches are always grouped regardless.
 const THRESHOLD = { image: 10, video: 14 };
 
+// Accepted media types per mode. Used both for the file-picker `accept`
+// filter AND for hard validation (the picker hint alone can be bypassed,
+// and some formats like .mkv/.avi report an empty MIME type).
+const VIDEO_EXTS = ['mp4', 'm4v', 'mkv', 'mov', 'avi', 'webm', 'mpeg', 'mpg', 'm2v', '3gp', '3g2', 'flv', 'wmv', 'ts', 'mts', 'ogv'];
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'heic', 'heif', 'avif', 'jfif', 'svg', 'ico'];
+const ACCEPT = {
+  video: ['video/*', ...VIDEO_EXTS.map((e) => '.' + e)].join(','),
+  image: ['image/*', ...IMAGE_EXTS.map((e) => '.' + e)].join(','),
+};
+
+// Decide whether a file belongs to 'video', 'image', or is 'unknown'.
+// Prefers MIME type, falls back to extension for empty/odd MIME.
+function classify(file) {
+  const t = (file.type || '').toLowerCase();
+  if (t.startsWith('video/')) return 'video';
+  if (t.startsWith('image/')) return 'image';
+  const ext = file.name.toLowerCase().split('.').pop();
+  if (VIDEO_EXTS.includes(ext)) return 'video';
+  if (IMAGE_EXTS.includes(ext)) return 'image';
+  return 'unknown';
+}
+
 const state = {
   mode: null, // 'image' | 'video'
   items: [], // { id, file, sha, phash }
@@ -76,7 +98,7 @@ function startMode(mode) {
   state.mode = mode;
   state.items = [];
   $('#file-input').value = '';
-  $('#file-input').setAttribute('accept', mode === 'video' ? 'video/*' : 'image/*');
+  $('#file-input').setAttribute('accept', ACCEPT[mode]);
   $('#upload-title').textContent = mode === 'video' ? 'Upload your videos' : 'Upload your photos';
   $('#upload-sub').textContent =
     mode === 'video'
@@ -87,11 +109,10 @@ function startMode(mode) {
 }
 
 function addFiles(fileList) {
-  const wantType = state.mode === 'video' ? 'video/' : 'image/';
   let skipped = 0;
   for (const file of fileList) {
-    const okByType = file.type ? file.type.startsWith(wantType) : true;
-    if (!okByType) {
+    // Hard gate: only accept files that match the chosen mode.
+    if (classify(file) !== state.mode) {
       skipped++;
       continue;
     }
@@ -102,7 +123,10 @@ function addFiles(fileList) {
   }
   $('#file-input').value = '';
   renderFileList();
-  if (skipped) flash($('#upload-note'), `${skipped} file(s) skipped — wrong type for ${state.mode}s.`);
+  if (skipped) {
+    const want = state.mode === 'video' ? 'videos' : 'images';
+    flash($('#upload-note'), `${skipped} file(s) ignored — only ${want} are accepted here.`);
+  }
 }
 
 function clearFiles() {
