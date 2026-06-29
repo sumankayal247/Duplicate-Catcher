@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Duplicates Catcher</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand" data-home role="button" tabindex="0">
+        <span class="brand-icon">🕵️</span>
+        <span class="brand-text">Duplicates&nbsp;Catcher</span>
+      </div>
+      <span class="brand-note">100% on-device · nothing is uploaded</span>
+    </header>
+
+    <main>
+      <!-- HOME -->
+      <section id="screen-home" class="screen active">
+        <h1 class="hero-title">What are we hunting today?</h1>
+        <p class="hero-sub">
+          Pick a media type, bulk-add your files, and we'll catch duplicate <em>content</em> —
+          even hiding under a different filename.
+        </p>
+        <div class="tiles">
+          <button id="tile-video" class="tile tile-video">
+            <span class="tile-emoji">🎬</span>
+            <span class="tile-title">Video</span>
+            <span class="tile-desc">Find duplicate clips across re-encodes &amp; renames</span>
+          </button>
+          <button id="tile-image" class="tile tile-image">
+            <span class="tile-emoji">🖼️</span>
+            <span class="tile-title">Images</span>
+            <span class="tile-desc">Find duplicate photos even when resized or recompressed</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- UPLOAD -->
+      <section id="screen-upload" class="screen">
+        <button class="back-link" data-home>← Back</button>
+        <h2 id="upload-title">Upload your files</h2>
+        <p id="upload-sub" class="muted"></p>
+
+        <div id="dropzone" class="dropzone">
+          <span class="drop-emoji">📥</span>
+          <p>Drag &amp; drop files here</p>
+          <p class="muted small">or</p>
+          <button id="pick-btn" class="btn btn-secondary">Choose files</button>
+          <input id="file-input" type="file" multiple hidden />
+        </div>
+        <p id="upload-note" class="note"></p>
+
+        <div class="filelist-head">
+          <span><strong id="file-count">0</strong> file(s) added</span>
+          <button id="clear-btn" class="link-btn" disabled>Clear all</button>
+        </div>
+        <ul id="file-list" class="file-list"></ul>
+
+        <div class="actionbar">
+          <span id="find-hint" class="muted small"></span>
+          <button id="find-btn" class="btn btn-primary" disabled>🔍 Find duplicates</button>
+        </div>
+      </section>
+
+      <!-- PROCESSING -->
+      <section id="screen-processing" class="screen">
+        <h2>Catching duplicates…</h2>
+        <p class="muted">Fingerprinting content and comparing — large videos take a moment.</p>
+        <div class="progress"><div id="proc-bar" class="progress-bar"></div></div>
+        <p id="proc-label" class="muted small mono"></p>
+      </section>
+
+      <!-- REVIEW -->
+      <section id="screen-review" class="screen">
+        <button class="back-link" data-home>← Start over</button>
+        <h2 id="review-title">Review the duplicates</h2>
+        <p id="review-sub" class="muted"></p>
+        <div id="pairs" class="pairs"></div>
+
+        <div class="confirm-bar">
+          <span id="confirm-stats" class="muted small"></span>
+          <button id="confirm-btn" class="btn btn-primary btn-big">Yeah, That's all of them</button>
+        </div>
+      </section>
+
+      <!-- DONE -->
+      <section id="screen-done" class="screen">
+        <div class="done-card">
+          <span class="done-emoji">🎉</span>
+          <h2>Your originals are ready</h2>
+          <p id="done-stats" class="muted"></p>
+          <p id="done-size" class="muted small"></p>
+          <p class="muted small">Your download should have started automatically.</p>
+          <button class="btn btn-primary" data-home>Catch more duplicates</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot muted small">
+      Files are processed entirely in your browser — they never leave your device.
+    </footer>
+
+    <script src="js/zip.js" defer></script>
+    <script src="js/hash.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
