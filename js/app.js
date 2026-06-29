@@ -36,6 +36,7 @@ const state = {
   items: [], // { id, file, sha, phash }
   pairs: [], // { original, dup, exact, distance, similarity, refuted }
   reviewUrls: [], // object URLs to revoke
+  modalUrl: null, // active lightbox object URL
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -75,6 +76,14 @@ function init() {
   $('#find-btn').addEventListener('click', process);
   $('#clear-btn').addEventListener('click', clearFiles);
   $('#confirm-btn').addEventListener('click', buildAndDownload);
+
+  // Lightbox: close on ✕, backdrop click, or Escape.
+  $('#modal').addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
 }
 
 function showScreen(name) {
@@ -291,9 +300,9 @@ function mediaEl(file) {
   if (state.mode === 'video') {
     el = document.createElement('video');
     el.src = url;
-    el.controls = true;
     el.muted = true;
     el.preload = 'metadata';
+    el.playsInline = true;
   } else {
     el = document.createElement('img');
     el.src = url;
@@ -301,7 +310,53 @@ function mediaEl(file) {
     el.alt = file.name;
   }
   el.className = 'media';
+  el.title = 'Click to view larger';
+  el.addEventListener('click', () => openModal(file));
   return el;
+}
+
+// ---- Lightbox modal ------------------------------------------------------
+function openModal(file) {
+  const body = $('#modal-body');
+  releaseModalUrl();
+  const url = URL.createObjectURL(file);
+  state.modalUrl = url;
+
+  let el;
+  if (state.mode === 'video') {
+    el = document.createElement('video');
+    el.src = url;
+    el.controls = true;
+    el.autoplay = true;
+    el.playsInline = true;
+  } else {
+    el = document.createElement('img');
+    el.src = url;
+    el.alt = file.name;
+  }
+  el.className = 'modal-media';
+
+  body.innerHTML = '';
+  body.appendChild(el);
+  $('#modal-caption').textContent = file.name;
+  $('#modal').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  const modal = $('#modal');
+  if (modal.hidden) return;
+  modal.hidden = true;
+  $('#modal-body').innerHTML = ''; // stops any playing video
+  document.body.style.overflow = '';
+  releaseModalUrl();
+}
+
+function releaseModalUrl() {
+  if (state.modalUrl) {
+    URL.revokeObjectURL(state.modalUrl);
+    state.modalUrl = null;
+  }
 }
 
 function side(file, badgeText, badgeClass) {
@@ -460,6 +515,7 @@ function uniqueName(name, used) {
 }
 
 function releaseUrls() {
+  closeModal();
   state.reviewUrls.forEach((u) => URL.revokeObjectURL(u));
   state.reviewUrls = [];
 }
