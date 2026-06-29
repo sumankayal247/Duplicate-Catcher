@@ -1,6 +1,8 @@
 // Content hashing: exact (SHA-256 of bytes) + perceptual (dHash of pixels).
 // Filenames are never used — detection is purely content based.
+// Wrapped in an IIFE so only window.DC_hash leaks — no global name clashes.
 
+(function () {
 // ---- Exact: SHA-256 of the raw file bytes --------------------------------
 async function sha256Hex(arrayBuffer) {
   const digest = await crypto.subtle.digest('SHA-256', arrayBuffer);
@@ -125,3 +127,4 @@ function phashDistance(a, b) {
 }
 
 window.DC_hash = { sha256Hex, imagePHash, videoPHash, phashDistance };
+})();

@@ -1,7 +1,9 @@
 // Minimal, dependency-free ZIP writer (STORE / no compression).
 // Media files (jpg/png/mp4...) are already compressed, so storing them
 // uncompressed keeps things simple, fast, and fully offline.
+// Wrapped in an IIFE so only window.DC_zip leaks — no global name clashes.
 
+(function () {
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
   for (let n = 0; n < 256; n++) {
@@ -85,3 +87,4 @@ function makeZip(entries) {
 }
 
 window.DC_zip = { makeZip };
+})();
